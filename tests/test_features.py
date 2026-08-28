@@ -5,6 +5,7 @@ import pytest
 
 from eldericare.features import (
     extract_features,
+    extract_window_features,
     normalize_audio,
     peak_amplitude,
     rms_energy,
@@ -88,3 +89,27 @@ def test_extract_features():
     assert features.dtype == np.float32
     assert features[0] == pytest.approx(np.sqrt(0.625))
     assert features[1] == pytest.approx(1.0)
+
+def test_extract_window_features():
+    """Each audio window should produce one feature vector."""
+    sample_rate = 10
+    audio = np.array(
+        [
+            1.0, -1.0, 1.0, -1.0, 0.0,
+            2.0, -2.0, 2.0, -2.0, 0.0,
+        ]
+    )
+
+    features = extract_window_features(
+        audio,
+        sample_rate=sample_rate,
+        window_duration=0.5,
+    )
+
+    assert features.shape == (2, 2)
+
+    assert features[0, 0] == pytest.approx(np.sqrt(0.8))
+    assert features[0, 1] == pytest.approx(1.0)
+
+    assert features[1, 0] == pytest.approx(np.sqrt(3.2))
+    assert features[1, 1] == pytest.approx(2.0)

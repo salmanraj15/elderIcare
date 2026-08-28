@@ -141,3 +141,33 @@ def extract_features(audio: np.ndarray) -> np.ndarray:
         ],
         dtype=np.float32,
     )
+
+def extract_window_features(
+    audio: np.ndarray,
+    sample_rate: int,
+    window_duration: float,
+) -> np.ndarray:
+    """Extract feature vectors from fixed-duration audio windows.
+
+    Parameters
+    ----------
+    audio:
+        Audio samples as a NumPy array.
+    sample_rate:
+        Number of samples per second.
+    window_duration:
+        Window length in seconds.
+
+    Returns
+    -------
+    np.ndarray
+        Two-dimensional feature matrix where each row represents
+        one audio window.
+    """
+    windows = window_audio(
+        audio,
+        sample_rate=sample_rate,
+        window_duration=window_duration,
+    )
+
+    return np.vstack([extract_features(window) for window in windows])
