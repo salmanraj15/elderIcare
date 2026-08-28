@@ -80,6 +80,43 @@ def evaluate_model(
 
     return correct / total
 
+def evaluate_model_per_class(
+    model: AcousticEventClassifier,
+    dataset: TensorDataset,
+    num_classes: int = 3,
+) -> dict[int, float]:
+    """Evaluate accuracy separately for each class."""
+    loader = DataLoader(
+        dataset,
+        batch_size=32,
+        shuffle=False,
+    )
+
+    model.eval()
+
+    correct = [0] * num_classes
+    total = [0] * num_classes
+
+    with torch.no_grad():
+        for features, labels in loader:
+            predictions = model(features).argmax(dim=1)
+
+            for label, prediction in zip(labels, predictions):
+                class_index = int(label.item())
+
+                if prediction.item() == class_index:
+                    correct[class_index] += 1
+
+                total[class_index] += 1
+
+    return {
+        class_index: (
+            correct[class_index] / total[class_index]
+            if total[class_index] > 0
+            else 0.0
+        )
+        for class_index in range(num_classes)
+    }
 
 if __name__ == "__main__":
     from eldericare.dataset import (

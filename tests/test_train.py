@@ -3,7 +3,11 @@
 import torch
 
 from eldericare.dataset import create_synthetic_dataset
-from eldericare.train import evaluate_model, train_model
+from eldericare.train import (
+    evaluate_model,
+    evaluate_model_per_class,
+    train_model,
+)
 
 
 def test_train_model_returns_classifier():
@@ -72,3 +76,25 @@ def test_evaluate_model_returns_accuracy():
 
     assert 0.0 <= accuracy <= 1.0
     assert accuracy >= 0.90
+
+def test_evaluate_model_per_class():
+    """Per-class evaluation should return one accuracy per class."""
+    dataset = create_synthetic_dataset(
+        samples_per_class=20,
+    )
+
+    model = train_model(
+        dataset,
+        epochs=50,
+    )
+
+    metrics = evaluate_model_per_class(
+        model,
+        dataset,
+    )
+
+    assert set(metrics) == {0, 1, 2}
+
+    for accuracy in metrics.values():
+        assert 0.0 <= accuracy <= 1.0
+        assert accuracy >= 0.90
