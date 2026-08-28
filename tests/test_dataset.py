@@ -1,8 +1,12 @@
 """Tests for elderIcare dataset utilities."""
 
 import torch
+import pytest
 
-from eldericare.dataset import create_synthetic_dataset
+from eldericare.dataset import (
+    create_synthetic_dataset,
+    split_dataset,
+)
 
 
 def test_create_synthetic_dataset():
@@ -25,3 +29,53 @@ def test_synthetic_dataset_has_three_classes():
     labels = torch.stack([item[1] for item in dataset])
 
     assert set(labels.tolist()) == {0, 1, 2}
+
+def test_split_dataset():
+    """Dataset should be split into training and evaluation sets."""
+    dataset = create_synthetic_dataset(
+        samples_per_class=50,
+    )
+
+    training, evaluation = split_dataset(
+        dataset,
+        evaluation_fraction=0.2,
+    )
+
+    assert len(training) == 120
+    assert len(evaluation) == 30
+    assert len(training) + len(evaluation) == len(dataset)
+
+
+def test_split_dataset_is_deterministic():
+    """The same seed should produce the same split."""
+    dataset = create_synthetic_dataset(
+        samples_per_class=20,
+    )
+
+    training_a, evaluation_a = split_dataset(
+        dataset,
+        evaluation_fraction=0.2,
+        seed=42,
+    )
+
+    training_b, evaluation_b = split_dataset(
+        dataset,
+        evaluation_fraction=0.2,
+        seed=42,
+    )
+
+    assert training_a.indices == training_b.indices
+    assert evaluation_a.indices == evaluation_b.indices
+
+
+def test_split_dataset_rejects_invalid_fraction():
+    """Invalid evaluation fractions should raise ValueError."""
+    dataset = create_synthetic_dataset(
+        samples_per_class=10,
+    )
+
+    with pytest.raises(ValueError):
+        split_dataset(dataset, evaluation_fraction=0.0)
+
+    with pytest.raises(ValueError):
+        split_dataset(dataset, evaluation_fraction=1.0)
