@@ -44,3 +44,28 @@ def train_model(
             optimizer.step()
 
     return model
+
+if __name__ == "__main__":
+    from pathlib import Path
+
+    from eldericare.dataset import create_synthetic_dataset
+    from eldericare.model import save_model
+
+    dataset = create_synthetic_dataset(
+        samples_per_class=100,
+        seed=42,
+    )
+
+    model = train_model(
+        dataset,
+        epochs=50,
+    )
+
+    output_path = Path("models") / "baseline.pt"
+
+    save_model(
+        model,
+        output_path,
+    )
+
+    print(f"Model saved to: {output_path}")
