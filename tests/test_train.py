@@ -3,7 +3,7 @@
 import torch
 
 from eldericare.dataset import create_synthetic_dataset
-from eldericare.train import train_model
+from eldericare.train import evaluate_model, train_model
 
 
 def test_train_model_returns_classifier():
@@ -52,4 +52,23 @@ def test_trained_model_can_predict_synthetic_data():
 
     accuracy = (predictions == labels).float().mean().item()
 
+    assert accuracy >= 0.90
+
+def test_evaluate_model_returns_accuracy():
+    """Evaluation should return an accuracy between 0 and 1."""
+    dataset = create_synthetic_dataset(
+        samples_per_class=20,
+    )
+
+    model = train_model(
+        dataset,
+        epochs=50,
+    )
+
+    accuracy = evaluate_model(
+        model,
+        dataset,
+    )
+
+    assert 0.0 <= accuracy <= 1.0
     assert accuracy >= 0.90

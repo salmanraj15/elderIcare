@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from eldericare.model import AcousticEventClassifier
 
+torch.manual_seed(42)
 
 def train_model(
     dataset: TensorDataset,
@@ -69,3 +70,34 @@ if __name__ == "__main__":
     )
 
     print(f"Model saved to: {output_path}")
+
+def evaluate_model(
+    model: AcousticEventClassifier,
+    dataset: TensorDataset,
+) -> float:
+    """Evaluate classification accuracy on a dataset.
+
+    This function does not update model parameters.
+    """
+    loader = DataLoader(
+        dataset,
+        batch_size=32,
+        shuffle=False,
+    )
+
+    model.eval()
+
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        for features, labels in loader:
+            predictions = model(features).argmax(dim=1)
+
+            correct += int((predictions == labels).sum().item())
+            total += labels.size(0)
+
+    if total == 0:
+        raise ValueError("Cannot evaluate an empty dataset.")
+
+    return correct / total
