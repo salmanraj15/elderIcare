@@ -2,6 +2,7 @@
 
 import torch
 from torch import nn
+from pathlib import Path
 
 
 class AcousticEventClassifier(nn.Module):
@@ -34,3 +35,37 @@ class AcousticEventClassifier(nn.Module):
     def forward(self, features: torch.Tensor) -> torch.Tensor:
         """Run the classifier on a batch of feature vectors."""
         return self.network(features)
+
+def save_model(
+    model: AcousticEventClassifier,
+    path: str | Path,
+) -> None:
+    """Save model parameters to disk."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    torch.save(model.state_dict(), path)
+
+
+def load_model(
+    path: str | Path,
+    input_features: int = 2,
+    num_classes: int = 3,
+) -> AcousticEventClassifier:
+    """Load model parameters from disk."""
+    path = Path(path)
+
+    model = AcousticEventClassifier(
+        input_features=input_features,
+        num_classes=num_classes,
+    )
+
+    state_dict = torch.load(
+        path,
+        map_location="cpu",
+    )
+
+    model.load_state_dict(state_dict)
+    model.eval()
+
+    return model
