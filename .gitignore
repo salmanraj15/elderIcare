@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Environment variables / secrets
+.env
+.env.*
+
+# ML model artifacts
+*.pt
+*.pth
+*.onnx
+*.tflite
+
+# Local datasets
+dataset/raw/*
+dataset/processed/*
+
+# Experiment outputs
+experiments/output/
+
+# Logs
+*.log
