@@ -3,7 +3,12 @@
 import numpy as np
 import pytest
 
-from eldericare.features import normalize_audio, rms_energy, peak_amplitude
+from eldericare.features import (
+    normalize_audio,
+    peak_amplitude,
+    rms_energy,
+    window_audio,
+)
 
 
 def test_rms_energy():
@@ -46,3 +51,28 @@ def test_peak_amplitude():
     result = peak_amplitude(audio)
 
     assert result == pytest.approx(0.8)
+
+def test_window_audio():
+    """Audio should be divided into fixed-duration windows."""
+    sample_rate = 10
+    audio = np.arange(25)
+
+    windows = window_audio(
+        audio,
+        sample_rate=sample_rate,
+        window_duration=1.0,
+    )
+
+    assert len(windows) == 3
+
+    np.testing.assert_array_equal(windows[0], np.arange(10))
+    np.testing.assert_array_equal(windows[1], np.arange(10, 20))
+    np.testing.assert_array_equal(windows[2], np.arange(20, 25))
+
+
+def test_window_audio_invalid_duration():
+    """A non-positive window duration should raise a ValueError."""
+    audio = np.arange(10)
+
+    with pytest.raises(ValueError):
+        window_audio(audio, sample_rate=10, window_duration=0)
