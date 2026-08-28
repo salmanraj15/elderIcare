@@ -120,3 +120,24 @@ def window_audio(
         for start in range(0, len(samples), window_size)
         if len(samples[start : start + window_size]) > 0
     ]
+
+def extract_features(audio: np.ndarray) -> np.ndarray:
+    """Extract a feature vector from an audio window.
+
+    Parameters
+    ----------
+    audio:
+        Audio samples as a NumPy array.
+
+    Returns
+    -------
+    np.ndarray
+        Feature vector containing RMS energy and peak amplitude.
+    """
+    return np.array(
+        [
+            rms_energy(audio),
+            peak_amplitude(audio),
+        ],
+        dtype=np.float32,
+    )

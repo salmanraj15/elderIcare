@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from eldericare.features import (
+    extract_features,
     normalize_audio,
     peak_amplitude,
     rms_energy,
@@ -76,3 +77,14 @@ def test_window_audio_invalid_duration():
 
     with pytest.raises(ValueError):
         window_audio(audio, sample_rate=10, window_duration=0)
+
+def test_extract_features():
+    """Feature extraction should return RMS energy and peak amplitude."""
+    audio = np.array([1.0, -1.0, 0.5, -0.5])
+
+    features = extract_features(audio)
+
+    assert features.shape == (2,)
+    assert features.dtype == np.float32
+    assert features[0] == pytest.approx(np.sqrt(0.625))
+    assert features[1] == pytest.approx(1.0)
