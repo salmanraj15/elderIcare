@@ -214,3 +214,42 @@ def test_dataset_class_mapping():
     for index, name in enumerate(CLASS_NAMES):
         assert CLASS_TO_INDEX[name] == index
         assert INDEX_TO_CLASS[index] == name
+
+def test_load_audio_dataset_rejects_unknown_class(tmp_path):
+    """An unknown class in the manifest should raise ValueError."""
+    import numpy as np
+    from scipy.io import wavfile
+
+    audio_path = tmp_path / "test.wav"
+
+    wavfile.write(
+        audio_path,
+        16_000,
+        np.zeros(16_000, dtype=np.int16),
+    )
+
+    manifest_path = tmp_path / "metadata.csv"
+
+    manifest_path.write_text(
+        "recording_id,class,path\n"
+        "REC_000001,unknown,test.wav\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Unknown dataset class"):
+        load_audio_dataset(manifest_path)
+
+def test_load_audio_dataset_rejects_empty_manifest(tmp_path):
+    """An empty manifest should raise ValueError."""
+    manifest_path = tmp_path / "metadata.csv"
+
+    manifest_path.write_text(
+        "recording_id,class,path\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+    ValueError,
+    match="Dataset manifest does not contain any recordings",
+    ):
+     load_audio_dataset(manifest_path)
