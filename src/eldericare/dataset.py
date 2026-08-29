@@ -1,5 +1,8 @@
 """Dataset utilities for elderIcare."""
 
+import csv
+from pathlib import Path
+
 import numpy as np
 import torch
 from torch.utils.data import TensorDataset
@@ -54,6 +57,44 @@ def create_synthetic_dataset(
 
     return TensorDataset(feature_tensor, label_tensor)
 
+def load_dataset_manifest(
+    path: str | Path,
+) -> list[dict[str, str]]:
+    """Load dataset recording metadata from a CSV manifest."""
+    path = Path(path)
+
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Dataset manifest not found: {path}"
+        )
+
+    with path.open(
+        "r",
+        newline="",
+        encoding="utf-8",
+    ) as file:
+        reader = csv.DictReader(file)
+
+        if reader.fieldnames is None:
+            raise ValueError(
+                "Dataset manifest must contain a header row."
+            )
+
+        required_fields = {
+            "recording_id",
+            "class",
+            "path",
+        }
+
+        missing_fields = required_fields - set(reader.fieldnames)
+
+        if missing_fields:
+            raise ValueError(
+                "Dataset manifest is missing required fields: "
+                + ", ".join(sorted(missing_fields))
+            )
+
+        return list(reader)
 
 class IndexedTensorDataset(TensorDataset):
     """TensorDataset that keeps the original sample indices."""

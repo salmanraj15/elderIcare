@@ -5,6 +5,7 @@ import pytest
 
 from eldericare.dataset import (
     create_synthetic_dataset,
+    load_dataset_manifest,
     split_dataset,
 )
 
@@ -103,3 +104,54 @@ def test_split_dataset_preserves_all_classes():
 
     assert training_labels == {0, 1, 2}
     assert evaluation_labels == {0, 1, 2}
+
+def test_load_dataset_manifest(tmp_path):
+    """Dataset manifest should load recording metadata."""
+    manifest_path = tmp_path / "metadata.csv"
+
+    manifest_path.write_text(
+        "recording_id,class,path\n"
+        "REC_000001,background,a.wav\n"
+        "REC_000002,speech,b.wav\n",
+        encoding="utf-8",
+    )
+
+    records = load_dataset_manifest(manifest_path)
+
+    assert len(records) == 2
+    assert records[0]["recording_id"] == "REC_000001"
+    assert records[0]["class"] == "background"
+    assert records[1]["path"] == "b.wav"    
+    
+def test_load_dataset_manifest_rejects_missing_file(tmp_path):
+    """A missing dataset manifest should raise FileNotFoundError."""
+    manifest_path = tmp_path / "missing.csv"
+
+    try:
+        load_dataset_manifest(manifest_path)
+    except FileNotFoundError:
+        pass
+    else:
+        raise AssertionError(
+            "Expected FileNotFoundError for missing manifest."
+        )
+
+
+def test_load_dataset_manifest_rejects_missing_fields(tmp_path):
+    """A manifest missing required fields should raise ValueError."""
+    manifest_path = tmp_path / "metadata.csv"
+
+    manifest_path.write_text(
+        "recording_id,path\n"
+        "REC_000001,a.wav\n",
+        encoding="utf-8",
+    )
+
+    try:
+        load_dataset_manifest(manifest_path)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError(
+            "Expected ValueError for missing manifest fields."
+        )

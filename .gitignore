@@ -40,3 +40,7 @@ experiments/output/
 
 # Logs
 *.log
+
+# Dataset recordings
+data/**/*.wav
+data/**/*.WAV
