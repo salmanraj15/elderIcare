@@ -7,6 +7,9 @@ import numpy as np
 import torch
 from torch.utils.data import TensorDataset
 
+from eldericare.audio import load_wav
+from eldericare.features import extract_features
+
 
 def create_synthetic_dataset(
     samples_per_class: int = 100,
@@ -95,6 +98,66 @@ def load_dataset_manifest(
             )
 
         return list(reader)
+
+def load_audio_dataset(
+    manifest_path: str | Path,
+) -> TensorDataset:
+    """Load audio recordings listed in a dataset manifest.
+
+    Each manifest record must contain a recording ID, class name,
+    and path to a WAV file.
+    """
+    records = load_dataset_manifest(manifest_path)
+
+    class_names = {
+        "background": 0,
+        "speech": 1,
+        "help_call": 2,
+        "impact": 3,
+        "cough": 4,
+        "alarm": 5,
+    }
+
+    features: list[np.ndarray] = []
+    labels: list[int] = []
+
+    manifest_path = Path(manifest_path)
+
+    for record in records:
+        class_name = record["class"]
+
+        if class_name not in class_names:
+            raise ValueError(
+                f"Unknown dataset class: {class_name}"
+            )
+
+        audio_path = manifest_path.parent / record["path"]
+
+        _, audio = load_wav(audio_path)
+
+        features.append(
+            extract_features(audio)
+        )
+        labels.append(class_names[class_name])
+
+    if not features:
+        raise ValueError(
+            "Dataset manifest does not contain any recordings."
+        )
+
+    feature_tensor = torch.from_numpy(
+        np.vstack(features).astype(np.float32)
+    )
+
+    label_tensor = torch.tensor(
+        labels,
+        dtype=torch.int64,
+    )
+
+    return TensorDataset(
+        feature_tensor,
+        label_tensor,
+    )
 
 class IndexedTensorDataset(TensorDataset):
     """TensorDataset that keeps the original sample indices."""

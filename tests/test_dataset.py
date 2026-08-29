@@ -2,11 +2,13 @@
 
 import torch
 import pytest
+import numpy as np
 
 from eldericare.dataset import (
     create_synthetic_dataset,
     load_dataset_manifest,
-    split_dataset,
+    load_audio_dataset,
+    split_dataset
 )
 
 
@@ -155,3 +157,39 @@ def test_load_dataset_manifest_rejects_missing_fields(tmp_path):
         raise AssertionError(
             "Expected ValueError for missing manifest fields."
         )
+
+def test_load_audio_dataset(tmp_path):
+    """Audio recordings in a manifest should become a TensorDataset."""
+    from scipy.io import wavfile
+
+    manifest_path = tmp_path / "metadata.csv"
+    audio_path = tmp_path / "test.wav"
+
+    sample_rate = 16_000
+    samples = np.zeros(
+        sample_rate,
+        dtype=np.int16,
+    )
+
+    wavfile.write(
+        audio_path,
+        sample_rate,
+        samples,
+    )
+
+    manifest_path.write_text(
+        "recording_id,class,path\n"
+        "REC_000001,background,test.wav\n",
+        encoding="utf-8",
+    )
+
+    dataset = load_audio_dataset(
+        manifest_path
+    )
+
+    assert len(dataset) == 1
+
+    features, label = dataset[0]
+
+    assert features.shape == (2,)
+    assert label.item() == 0
