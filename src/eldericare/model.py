@@ -3,6 +3,7 @@
 import torch
 from torch import nn
 from pathlib import Path
+from eldericare.dataset import NUM_CLASSES
 
 
 class AcousticEventClassifier(nn.Module):
@@ -11,7 +12,7 @@ class AcousticEventClassifier(nn.Module):
     def __init__(
         self,
         input_features: int = 2,
-        num_classes: int = 3,
+        num_classes: int = NUM_CLASSES,
     ) -> None:
         """Initialize the classifier.
 
@@ -50,7 +51,7 @@ def save_model(
 def load_model(
     path: str | Path,
     input_features: int = 2,
-    num_classes: int = 3,
+    num_classes: int = NUM_CLASSES,
 ) -> AcousticEventClassifier:
     """Load model parameters from disk."""
     path = Path(path)

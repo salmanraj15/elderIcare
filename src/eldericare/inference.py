@@ -5,13 +5,7 @@ import torch
 from eldericare.model import AcousticEventClassifier
 from eldericare.audio import load_wav
 from eldericare.features import extract_features
-
-
-CLASS_NAMES = {
-    0: "background",
-    1: "speech",
-    2: "impact",
-}
+from eldericare.dataset import CLASS_NAMES
 
 
 def predict_event(

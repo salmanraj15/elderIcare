@@ -10,6 +10,26 @@ from torch.utils.data import TensorDataset
 from eldericare.audio import load_wav
 from eldericare.features import extract_features
 
+CLASS_NAMES = (
+    "background",
+    "speech",
+    "help_call",
+    "impact",
+    "cough",
+    "alarm",
+)
+
+NUM_CLASSES = len(CLASS_NAMES)
+
+CLASS_TO_INDEX = {
+    name: index
+    for index, name in enumerate(CLASS_NAMES)
+}
+
+INDEX_TO_CLASS = {
+    index: name
+    for index, name in enumerate(CLASS_NAMES)
+}
 
 def create_synthetic_dataset(
     samples_per_class: int = 100,
@@ -126,10 +146,10 @@ def load_audio_dataset(
     for record in records:
         class_name = record["class"]
 
-        if class_name not in class_names:
+        if class_name not in CLASS_TO_INDEX:
             raise ValueError(
                 f"Unknown dataset class: {class_name}"
-            )
+         )
 
         audio_path = manifest_path.parent / record["path"]
 
@@ -138,7 +158,7 @@ def load_audio_dataset(
         features.append(
             extract_features(audio)
         )
-        labels.append(class_names[class_name])
+        labels.append(CLASS_TO_INDEX[class_name])
 
     if not features:
         raise ValueError(

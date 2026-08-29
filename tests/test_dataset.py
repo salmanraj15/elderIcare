@@ -193,3 +193,24 @@ def test_load_audio_dataset(tmp_path):
 
     assert features.shape == (2,)
     assert label.item() == 0
+
+def test_dataset_class_mapping():
+    """Dataset classes should have stable numeric indices."""
+    from eldericare.dataset import (
+        CLASS_NAMES,
+        CLASS_TO_INDEX,
+        INDEX_TO_CLASS,
+    )
+
+    assert len(CLASS_NAMES) == 6
+
+    assert CLASS_TO_INDEX["background"] == 0
+    assert CLASS_TO_INDEX["speech"] == 1
+    assert CLASS_TO_INDEX["help_call"] == 2
+    assert CLASS_TO_INDEX["impact"] == 3
+    assert CLASS_TO_INDEX["cough"] == 4
+    assert CLASS_TO_INDEX["alarm"] == 5
+
+    for index, name in enumerate(CLASS_NAMES):
+        assert CLASS_TO_INDEX[name] == index
+        assert INDEX_TO_CLASS[index] == name

@@ -6,6 +6,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
+from eldericare.dataset import NUM_CLASSES
 from eldericare.model import AcousticEventClassifier
 
 
@@ -17,9 +18,12 @@ def train_model(
     epochs: int = 50,
     batch_size: int = 32,
     learning_rate: float = 0.01,
+    num_classes: int = NUM_CLASSES,
 ) -> AcousticEventClassifier:
     """Train the acoustic event classifier."""
-    model = AcousticEventClassifier()
+    model = AcousticEventClassifier(
+        num_classes=num_classes,
+    )
 
     loader = DataLoader(
         dataset,
@@ -83,7 +87,7 @@ def evaluate_model(
 def evaluate_model_per_class(
     model: AcousticEventClassifier,
     dataset: TensorDataset,
-    num_classes: int = 3,
+    num_classes: int = NUM_CLASSES,
 ) -> dict[int, float]:
     """Evaluate accuracy separately for each class."""
     loader = DataLoader(
@@ -123,8 +127,18 @@ if __name__ == "__main__":
         create_synthetic_dataset,
         split_dataset,
     )
-    from eldericare.inference import CLASS_NAMES
-    from eldericare.model import save_model
+    
+    from eldericare.dataset import (
+        CLASS_NAMES,
+        NUM_CLASSES,
+        create_synthetic_dataset,
+        split_dataset,
+    )
+    
+    from eldericare.model import (
+        save_model, 
+        AcousticEventClassifier,
+    )
 
     dataset = create_synthetic_dataset(
         samples_per_class=100,
@@ -140,6 +154,7 @@ if __name__ == "__main__":
     model = train_model(
         training_dataset,
         epochs=50,
+        num_classes=3,
     )
 
     accuracy = evaluate_model(
@@ -150,6 +165,7 @@ if __name__ == "__main__":
     class_metrics = evaluate_model_per_class(
         model,
         evaluation_dataset,
+        num_classes=3,
     )
 
     output_path = Path("models") / "baseline.pt"

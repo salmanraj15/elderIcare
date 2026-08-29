@@ -1,6 +1,7 @@
 """Tests for the elderIcare acoustic event classifier."""
 
 import torch
+from eldericare.dataset import NUM_CLASSES
 
 from eldericare.model import (
     AcousticEventClassifier,
@@ -24,7 +25,7 @@ def test_model_output_shape():
 
     output = model(features)
 
-    assert output.shape == (3, 3)
+    assert output.shape == (3, NUM_CLASSES)
 
 
 def test_model_custom_class_count():
@@ -42,7 +43,9 @@ def test_model_custom_class_count():
 
 def test_save_and_load_model(tmp_path):
     """A saved model should produce the same predictions after loading."""
-    model = AcousticEventClassifier()
+    model = AcousticEventClassifier(
+    num_classes=6,
+)
 
     features = torch.tensor(
         [
@@ -59,7 +62,10 @@ def test_save_and_load_model(tmp_path):
 
     save_model(model, model_path)
 
-    loaded_model = load_model(model_path)
+    loaded_model = load_model(
+        model_path,
+        num_classes=6,
+    )
 
     with torch.no_grad():
         loaded_output = loaded_model(features)
