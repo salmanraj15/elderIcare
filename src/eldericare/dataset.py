@@ -129,15 +129,6 @@ def load_audio_dataset(
     """
     records = load_dataset_manifest(manifest_path)
 
-    class_names = {
-        "background": 0,
-        "speech": 1,
-        "help_call": 2,
-        "impact": 3,
-        "cough": 4,
-        "alarm": 5,
-    }
-
     features: list[np.ndarray] = []
     labels: list[int] = []
 
