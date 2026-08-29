@@ -25,7 +25,7 @@ def train_model(
 
     loader = DataLoader(
         dataset,
-        batch_size=32,
+        batch_size=batch_size,
         shuffle=True,
     )
 
@@ -152,7 +152,7 @@ if __name__ == "__main__":
     model = train_model(
         training_dataset,
         epochs=50,
-        num_classes=3,
+        num_classes=NUM_CLASSES,
     )
 
     accuracy = evaluate_model(
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     class_metrics = evaluate_model_per_class(
         model,
         evaluation_dataset,
-        num_classes=3,
+        num_classes=NUM_CLASSES,
     )
 
     output_path = Path("models") / "baseline.pt"
