@@ -118,3 +118,41 @@ def test_predict_wav_cli_rejects_missing_file():
 
     assert result.returncode == 1
     assert "WAV file not found" in result.stdout
+
+def test_predict_wav_with_trained_model(tmp_path):
+    """A trained model should predict directly from a WAV file."""
+    dataset = create_synthetic_dataset(
+        samples_per_class=30,
+    )
+
+    model = train_model(
+        dataset,
+        epochs=50,
+    )
+
+    sample_rate = 16_000
+    samples = np.zeros(
+        sample_rate,
+        dtype=np.int16,
+    )
+
+    wav_path = tmp_path / "trained_test.wav"
+
+    wavfile.write(
+        wav_path,
+        sample_rate,
+        samples,
+    )
+
+    event, confidence = predict_wav(
+        model,
+        str(wav_path),
+    )
+
+    assert event in {
+        "background",
+        "speech",
+        "impact",
+    }
+
+    assert 0.0 <= confidence <= 1.0
