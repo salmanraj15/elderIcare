@@ -22,17 +22,37 @@ def test_train_model_returns_classifier():
         num_classes=3,
     )
 
-    metrics = evaluate_model_per_class( 
-        model,
-        dataset, 
-        num_classes=3,
-    )
     features, _ = dataset[0]
 
     with torch.no_grad():
         output = model(features.unsqueeze(0))
 
     assert output.shape == (1, 3)
+
+def test_evaluate_model_per_class():
+    """Per-class evaluation should return one accuracy per class."""
+    dataset = create_synthetic_dataset(
+         samples_per_class=20,
+    )
+
+    model = train_model(
+        dataset,
+        epochs=50,
+        num_classes=3,
+    )
+
+    metrics = evaluate_model_per_class(
+        model,
+        dataset,
+        num_classes=3,
+    )
+
+    assert set(metrics) == {0, 1, 2}
+
+    for accuracy in metrics.values():
+        assert 0.0 <= accuracy <= 1.0
+
+
 
 def test_evaluate_model_per_class():
     """Per-class evaluation should return one accuracy per class."""

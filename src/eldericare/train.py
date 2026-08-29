@@ -9,9 +9,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from eldericare.dataset import NUM_CLASSES
 from eldericare.model import AcousticEventClassifier
 
-
 torch.manual_seed(42)
-
 
 def train_model(
     dataset: TensorDataset,
@@ -27,7 +25,7 @@ def train_model(
 
     loader = DataLoader(
         dataset,
-        batch_size=batch_size,
+        batch_size=32,
         shuffle=True,
     )
 

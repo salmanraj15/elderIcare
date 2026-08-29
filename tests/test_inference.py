@@ -156,3 +156,37 @@ def test_predict_wav_with_trained_model(tmp_path):
     }
 
     assert 0.0 <= confidence <= 1.0
+
+def test_predict_wav_returns_event_and_confidence(tmp_path):
+    """WAV inference should return a valid event and confidence."""
+    import numpy as np
+    from scipy.io import wavfile
+
+    from eldericare.dataset import CLASS_NAMES
+    from eldericare.inference import predict_wav
+    from eldericare.model import AcousticEventClassifier
+
+    sample_rate = 16000
+
+    audio = np.zeros(
+        sample_rate,
+        dtype=np.float32,
+    )
+
+    wav_path = tmp_path / "test.wav"
+
+    wavfile.write(
+        wav_path,
+        sample_rate,
+        audio,
+    )
+
+    model = AcousticEventClassifier()
+
+    event, confidence = predict_wav(
+        model,
+        wav_path,
+    )
+
+    assert event in CLASS_NAMES
+    assert 0.0 <= confidence <= 1.0
