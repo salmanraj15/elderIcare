@@ -4,7 +4,7 @@ import torch
 
 from eldericare.model import AcousticEventClassifier
 from eldericare.audio import load_wav
-from eldericare.features import extract_features
+from eldericare.features import extract_window_features
 from eldericare.dataset import CLASS_NAMES
 
 
@@ -53,15 +53,33 @@ def predict_event(
 def predict_wav(
     model: AcousticEventClassifier,
     path: str,
+    window_duration: float = 1.0,
 ) -> tuple[str, float]:
-    """Predict an acoustic event directly from a WAV file."""
-    _, audio = load_wav(path)
+    """Predict the most likely acoustic event from a WAV file."""
+    sample_rate, audio = load_wav(path)
 
-    features = torch.from_numpy(
-        extract_features(audio)
+    feature_matrix = extract_window_features(
+        audio,
+        sample_rate=sample_rate,
+        window_duration=window_duration,
     )
 
-    return predict_event(
-        model,
-        features,
-    )
+    features = torch.from_numpy(feature_matrix)
+
+    model.eval()
+
+    with torch.no_grad():
+        logits = model(features)
+        probabilities = torch.softmax(logits, dim=1)
+
+        mean_probabilities = probabilities.mean(dim=0)
+
+        predicted_class = int(
+            mean_probabilities.argmax().item()
+        )
+
+        confidence = float(
+            mean_probabilities[predicted_class].item()
+        )
+
+    return CLASS_NAMES[predicted_class], confidence
