@@ -79,3 +79,27 @@ def test_split_dataset_rejects_invalid_fraction():
 
     with pytest.raises(ValueError):
         split_dataset(dataset, evaluation_fraction=1.0)
+
+def test_split_dataset_preserves_all_classes():
+    """Both splits should contain every class."""
+    dataset = create_synthetic_dataset(
+        samples_per_class=50,
+    )
+
+    training, evaluation = split_dataset(
+        dataset,
+        evaluation_fraction=0.2,
+    )
+
+    training_labels = {
+        int(label.item())
+        for _, label in training
+    }
+
+    evaluation_labels = {
+        int(label.item())
+        for _, label in evaluation
+    }
+
+    assert training_labels == {0, 1, 2}
+    assert evaluation_labels == {0, 1, 2}

@@ -2,7 +2,7 @@
 
 import numpy as np
 import torch
-from torch.utils.data import TensorDataset, random_split
+from torch.utils.data import TensorDataset
 
 
 def create_synthetic_dataset(
@@ -54,41 +54,75 @@ def create_synthetic_dataset(
 
     return TensorDataset(feature_tensor, label_tensor)
 
+
+class IndexedTensorDataset(TensorDataset):
+    """TensorDataset that keeps the original sample indices."""
+
+    def __init__(
+        self,
+        features: torch.Tensor,
+        labels: torch.Tensor,
+        indices: list[int],
+    ) -> None:
+        super().__init__(features, labels)
+        self.indices = indices
+
+
 def split_dataset(
     dataset: TensorDataset,
     evaluation_fraction: float = 0.2,
     seed: int = 42,
 ) -> tuple[TensorDataset, TensorDataset]:
-    """Split a dataset into training and evaluation subsets.
-
-    Parameters
-    ----------
-    dataset:
-        Dataset to split.
-    evaluation_fraction:
-        Fraction of samples reserved for evaluation.
-    seed:
-        Random seed used for the split.
-
-    Returns
-    -------
-    tuple[TensorDataset, TensorDataset]
-        Training dataset followed by evaluation dataset.
-    """
+    """Split a dataset into stratified training and evaluation sets."""
     if not 0.0 < evaluation_fraction < 1.0:
         raise ValueError(
             "evaluation_fraction must be between 0 and 1."
         )
 
-    evaluation_size = int(len(dataset) * evaluation_fraction)
-    training_size = len(dataset) - evaluation_size
+    features, labels = dataset.tensors
 
-    generator = torch.Generator().manual_seed(seed)
+    rng = np.random.default_rng(seed)
 
-    training_dataset, evaluation_dataset = random_split(
-        dataset,
-        [training_size, evaluation_size],
-        generator=generator,
+    training_indices: list[int] = []
+    evaluation_indices: list[int] = []
+
+    for class_index in torch.unique(labels).tolist():
+        class_indices = torch.where(
+            labels == class_index
+        )[0].tolist()
+
+        rng.shuffle(class_indices)
+
+        evaluation_size = int(
+            len(class_indices) * evaluation_fraction
+        )
+
+        evaluation_indices.extend(
+            class_indices[:evaluation_size]
+        )
+
+        training_indices.extend(
+            class_indices[evaluation_size:]
+        )
+
+    rng.shuffle(training_indices)
+    rng.shuffle(evaluation_indices)
+
+    training_features = features[training_indices]
+    training_labels = labels[training_indices]
+
+    evaluation_features = features[evaluation_indices]
+    evaluation_labels = labels[evaluation_indices]
+
+    return (
+        IndexedTensorDataset(
+            training_features,
+            training_labels,
+            training_indices,
+        ),
+        IndexedTensorDataset(
+            evaluation_features,
+            evaluation_labels,
+            evaluation_indices,
+        ),
     )
-
-    return training_dataset, evaluation_dataset
