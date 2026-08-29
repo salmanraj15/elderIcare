@@ -41,7 +41,23 @@ Recordings should only be included when the project has the appropriate rights a
 
 ---
 
-## 3. Initial Classes
+## 3. Dataset Classes
+
+The planned elderIcare dataset contains six acoustic classes.
+
+The current software baseline supports only three classes:
+
+- `background`
+- `speech`
+- `impact`
+
+The following additional classes are planned for future development:
+
+- `help_call`
+- `cough`
+- `alarm`
+
+The planned dataset classes are:
 
 The first dataset version contains six acoustic classes.
 
@@ -56,6 +72,25 @@ The first dataset version contains six acoustic classes.
 
 ---
 
+
+Represents normal environmental sound.
+
+Examples:
+
+- Quiet room
+- Fan
+- Air conditioning
+- Distant household noise
+- Normal movement
+- Low-level room ambience
+
+A recording should be labelled `background` when none of the other target events is clearly present.
+
+---
+
+## 4. Class Definitions
+
+### 4.1 `background`
 
 Represents normal environmental sound.
 

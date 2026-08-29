@@ -4,135 +4,155 @@
 
 elderIcare is an experimental acoustic event detection project.
 
-Audio data can contain sensitive or personally identifiable information. Privacy should therefore be considered throughout dataset collection, storage, development, testing, and deployment.
+Audio recordings may contain sensitive information, including conversations and other information that could identify individuals.
 
-The project follows a privacy-by-design approach.
+Privacy should therefore be considered throughout dataset collection, development, testing, and deployment.
 
-## Audio Data
+## Privacy-by-Design Principle
 
-Audio recordings should be collected only when there is a clear development or research purpose.
+The project should follow a privacy-by-design approach.
 
-Where practical:
+Privacy considerations should be incorporated into the system before collecting or processing real-world audio.
 
-- Record only the minimum audio necessary.
-- Avoid recording private conversations unnecessarily.
-- Avoid collecting unrelated personal information.
-- Obtain appropriate consent from people who are recorded.
-- Keep recordings securely stored.
-- Do not publish private recordings.
+The project should collect and retain only the information necessary for the intended development or evaluation purpose.
 
-## Consent
+## Audio Collection
 
-Recordings should only be included in the project when the project has the appropriate rights and consent to use them.
+Before recording audio containing people:
 
-The project should document relevant consent and recording permissions where required.
+- Obtain appropriate consent.
+- Clearly define the purpose of the recording.
+- Record only the necessary audio.
+- Avoid unnecessary recording of private conversations.
+- Document the recording environment and intended use.
+- Store recordings securely.
 
-Consent information should be stored separately from the audio data when appropriate.
+The project should not assume that an audio recording is safe to use simply because it was technically possible to record it.
 
-## Dataset Metadata
+## Dataset Provenance
 
-Dataset metadata should contain only information necessary for the project.
+Each recording included in a dataset should have documented provenance.
 
-Avoid unnecessary personally identifying information such as:
+Relevant information may include:
 
-- Full names
-- Home addresses
-- Telephone numbers
-- Email addresses
-- Other unnecessary personal identifiers
+- Recording identifier
+- Recording date
+- Recording environment
+- Recording device
+- Sampling rate
+- Audio format
+- Intended class
+- Relevant recording notes
 
-Recording identifiers should be used instead of personal names where possible.
+Only recordings for which the project has appropriate rights and consent should be included.
 
-Example:
+See `docs/dataset.md` for the dataset specification.
 
-```text
-recording_id: REC_000001
-class: background
-date: YYYY-MM-DD
-device: <recording device>
-sampling_rate: <Hz>
-channels: 1
-duration_seconds: <duration>
-environment: living_room
-notes: quiet room with low background fan noise
-```
+## Personally Identifying Information
 
-## Raw Recordings
-
-Raw audio recordings should be kept separate from source code.
-
-Raw recordings should not be committed to the Git repository unless there is an explicit and documented reason to do so.
-
-The project should use appropriate access controls and secure storage for recordings.
-
-## Synthetic Dataset
-
-The current development dataset is synthetic.
-
-It is used to verify the training and evaluation pipeline and does not represent real-world elder-care acoustic environments.
-
-The synthetic dataset should not be treated as a substitute for privacy-reviewed real-world recordings.
-
-## Model Artifacts
-
-Trained model artifacts may contain information derived from training data.
-
-Model files should therefore be handled as project artifacts and should not be assumed to be automatically free of privacy concerns.
-
-The current repository excludes model artifacts such as:
-
-```text
-*.pt
-*.pth
-*.onnx
-*.tflite
-```
-
-## Development and Testing
-
-Development and testing should avoid exposing sensitive recordings unnecessarily.
+Metadata should not contain unnecessary personally identifying information.
 
 Where possible:
 
-- Use synthetic data for software testing.
-- Use anonymized or appropriately consented recordings for development.
-- Keep test fixtures free of unnecessary personal information.
-- Avoid committing private recordings to source control.
+- Use recording identifiers instead of personal names.
+- Avoid unnecessary addresses or exact locations.
+- Avoid storing unrelated personal information.
+- Keep identifying information separate from technical dataset metadata where appropriate.
 
-## Deployment Considerations
+## Raw Audio
 
-Any future Raspberry Pi or other edge deployment should consider privacy before collecting or processing real-world audio.
+Raw audio should be treated as potentially sensitive data.
 
-The system should process only the audio required for its intended function.
+The project should:
 
-Where practical, audio processing should occur locally rather than transmitting raw recordings unnecessarily.
+- Keep raw recordings separate from source code.
+- Avoid committing private recordings to Git.
+- Restrict access to recordings where appropriate.
+- Store recordings securely.
+- Remove recordings that are no longer required, subject to applicable retention requirements.
 
-The exact deployment privacy architecture has not yet been finalized.
+Private recordings should not be published as project examples.
 
-## Safety and Privacy Boundary
+## Development and Testing
 
-elderIcare is an experimental acoustic-event detection system.
+The current development pipeline uses a synthetic dataset.
 
-Acoustic classification should not be used to make unsupported conclusions about a person's health, safety, or medical condition.
+The synthetic dataset is intended for development and testing and does not represent real-world elder-care audio.
 
-For example, the system should not claim:
+Using synthetic data where practical can reduce the need to expose real personal audio during early development.
 
-- "A person has fallen."
-- "A medical emergency is occurring."
-- "The person requires medical treatment."
+Real-world recordings should only be introduced when there is a clear development or evaluation purpose and appropriate consent and data handling are in place.
 
-An acoustic event may provide evidence that something happened, but acoustic classification alone does not establish the underlying real-world event.
+## Sharing Data
+
+Audio recordings should not be shared publicly unless the project has established that the recordings can be shared for the intended purpose.
+
+Before sharing a dataset, consider:
+
+- Consent
+- Usage rights
+- Personal information
+- Sensitive content
+- Metadata
+- Storage and access controls
+- Intended audience
+
+Removing a person's name from metadata does not necessarily make an audio recording anonymous.
+
+## Model Artifacts
+
+Trained model files may encode information about the data used during training.
+
+Model artifacts should therefore be handled responsibly, particularly when trained using real-world recordings.
+
+Before distributing a model trained on sensitive data, the project should consider the privacy implications of the training data and the intended deployment environment.
+
+## Deployment
+
+Any future deployment involving microphones or continuous audio capture should clearly define:
+
+- What audio is processed
+- Whether audio is stored
+- How long data is retained
+- Where processing occurs
+- Who can access stored data
+- Whether audio leaves the device
+- How users can understand and control the system
+
+These requirements should be finalized before production deployment.
+
+## Elder-Care Context
+
+elderIcare is intended to explore acoustic event detection relevant to elder-care environments.
+
+The project should avoid unnecessary surveillance.
+
+The system should process only the audio required for its intended function and should avoid collecting unrelated personal information.
+
+## Safety and Privacy Boundaries
+
+Privacy protections do not make acoustic predictions medically reliable.
+
+The system must not claim that an acoustic classification proves:
+
+- A person has fallen.
+- A medical emergency is occurring.
+- A person requires medical treatment.
+
+Acoustic classification and real-world interpretation should remain separate system concerns.
 
 Any future alerting system should communicate uncertainty and, where appropriate, require human verification.
 
-## Future Work
+## Current Limitations
 
-Potential privacy improvements include:
+The current project does not yet provide a production privacy or data-governance system.
 
-- Formalizing the consent process.
-- Defining data retention periods.
-- Documenting access-control procedures.
-- Establishing secure storage requirements.
-- Reviewing privacy requirements before real-world dataset collection.
-- Defining procedures for deleting recordings and associated metadata.
-- Reviewing privacy requirements before deployment in real-world elder-care environments.
+The current implementation does not include:
+
+- A production audio collection service
+- A production data-retention system
+- A deployed access-control system
+- A production privacy-management interface
+- A production Raspberry Pi audio service
+
+These areas require additional design and validation before real-world deployment.

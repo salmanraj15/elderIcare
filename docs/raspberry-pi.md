@@ -2,37 +2,34 @@
 
 ## Overview
 
-elderIcare is intended to eventually support inference on a Raspberry Pi or similar edge device.
+Raspberry Pi deployment is a planned direction for elderIcare.
 
-The current project does not yet contain a deployed Raspberry Pi inference service.
+The current project contains an experimental inference pipeline, but it does not yet provide a production Raspberry Pi inference service.
 
-The Raspberry Pi deployment described in this document is therefore a development direction rather than a completed production deployment.
+The intended direction is to evaluate whether the acoustic event classifier can perform inference locally on Raspberry Pi hardware.
 
 ## Current Status
 
-The current pipeline supports:
+The current implementation provides:
 
 - WAV audio loading
 - Audio feature extraction
-- Acoustic event classification
-- WAV-based inference
+- Model inference
+- WAV-based prediction
 - Model saving and loading
-- Automated testing
 
-The current model uses:
+The current implementation does not yet provide:
 
-- RMS energy
-- Peak amplitude
+- Continuous microphone capture
+- A production Raspberry Pi service
+- Real-time event detection
+- Production alerting
+- A validated Raspberry Pi deployment
+- Production monitoring
 
-The current development classes are:
+## Intended Pipeline
 
-- `background`
-- `speech`
-- `impact`
-
-## Intended Edge Pipeline
-
-The intended Raspberry Pi workflow is:
+A future Raspberry Pi implementation may follow a pipeline similar to:
 
 ```text
 Microphone
@@ -41,146 +38,220 @@ Audio capture
     ↓
 Audio preprocessing
     ↓
-Fixed-duration audio window
+Fixed-duration windows
     ↓
 Feature extraction
     ↓
 Acoustic event classifier
     ↓
-Predicted event + confidence
+Event + confidence
     ↓
 Optional alerting layer
 ```
 
-The alerting layer is not currently implemented.
+The exact implementation should be determined through testing on the target hardware.
+
+## Local Inference
+
+A primary deployment goal is to perform inference locally on the Raspberry Pi.
+
+Local processing may reduce the need to transmit raw audio to an external service.
+
+However, the privacy and security properties of a future deployment must be evaluated before production use.
+
+See `docs/privacy.md` for the project's privacy principles.
 
 ## Model Deployment
 
-The trained model is currently saved as:
+The current baseline model is stored as:
 
 ```text
 models/baseline.pt
 ```
 
-Model artifacts are excluded from Git using:
+The model is currently saved using a PyTorch state dictionary.
 
-```text
-*.pt
-*.pth
-*.onnx
-*.tflite
-```
+A future Raspberry Pi deployment should evaluate:
 
-A future Raspberry Pi deployment will need a controlled method for transferring the appropriate model artifact to the device.
+- Model loading time
+- Inference latency
+- CPU usage
+- Memory usage
+- Storage requirements
+- Power consumption
+- Long-running stability
 
-## Inference
+No specific hardware performance targets have been established yet.
 
-The current inference utilities provide:
+## Audio Input
 
-### `predict_event()`
+The current inference pipeline supports WAV files.
 
-Accepts a feature vector containing:
+A future Raspberry Pi implementation would need to add microphone input and continuous or repeated audio capture.
 
-- RMS energy
-- Peak amplitude
+Important considerations include:
 
-It returns:
-
-- Predicted event
-- Confidence
-
-### `predict_wav()`
-
-Connects WAV loading and feature extraction to the prediction function.
-
-This provides a useful development path for testing the model before live microphone inference is implemented.
-
-## Hardware
-
-The specific Raspberry Pi model and microphone hardware have not yet been finalized.
-
-The deployment should eventually document:
-
-- Raspberry Pi model
-- Operating system
-- Python version
-- Microphone hardware
-- Audio interface
 - Sampling rate
 - Number of audio channels
-- Audio capture configuration
-- Model format
+- Audio format
+- Buffer size
+- Window duration
+- Microphone placement
+- Background noise
+- Recording level
 
-## Performance
+These parameters should be tested on the target hardware rather than assumed to be optimal.
 
-Raspberry Pi performance has not yet been formally benchmarked.
+## Real-Time Processing
 
-Before deployment, the project should measure:
+Real-time processing is a future capability.
 
-- Audio capture reliability
-- Feature extraction latency
-- Model inference latency
-- Memory usage
-- CPU usage
-- Continuous runtime stability
-- Power consumption where relevant
+A future implementation should process audio in bounded windows and perform inference without requiring the complete recording to be stored.
 
-Performance results should be documented using the specific hardware and software configuration tested.
+The system should measure processing latency to determine whether the selected model and hardware configuration are suitable for the intended use.
 
-## Privacy Considerations
+## Event Detection
 
-Audio collected by an edge device may contain sensitive information.
+The current model classifies an audio feature vector into one of three baseline classes:
 
-Any future Raspberry Pi deployment should:
+- `background`
+- `speech`
+- `impact`
 
-- Process only the audio necessary for the intended function.
-- Avoid unnecessary storage of raw audio.
-- Avoid unnecessary transmission of raw audio.
-- Use appropriate access controls.
-- Follow the project's privacy and consent requirements.
+A future Raspberry Pi implementation may process consecutive audio windows and produce a sequence of predictions.
 
-See `docs/privacy.md` for the project's privacy principles.
+Additional logic may eventually be required to:
 
-## Safety Boundary
+- Reduce duplicate predictions
+- Handle uncertain predictions
+- Detect persistent events
+- Apply confidence thresholds
+- Combine multiple observations
 
-The Raspberry Pi system should be treated as an acoustic event detection system.
+These behaviors are not currently implemented.
 
-An acoustic classification does not establish what happened in the physical world.
+## Alerting
+
+Alerting is a separate future system layer.
+
+A model prediction should not automatically be treated as proof of an emergency.
 
 For example:
 
-- `impact` does not prove that a person has fallen.
-- `speech` does not indicate a person's health status.
-- `help_call` does not prove that an emergency is occurring.
-- `cough` does not establish a medical condition.
+```text
+impact
+```
 
-Any future alerting system should communicate uncertainty and, where appropriate, require human verification.
+does not establish:
 
-## Future Work
+```text
+person has fallen
+```
 
-Potential Raspberry Pi development steps include:
+Similarly, an acoustic classification does not establish that medical assistance is required.
 
-- Select and document Raspberry Pi hardware.
-- Select and document microphone hardware.
-- Implement live microphone capture.
-- Implement continuous audio windowing.
-- Run feature extraction on-device.
-- Load the trained model on the device.
-- Measure inference latency and resource usage.
-- Implement controlled alerting.
-- Add automated tests for the edge inference workflow.
-- Evaluate reliability under realistic environmental conditions.
-- Document deployment and maintenance procedures.
+Any future alerting layer should account for model uncertainty and, where appropriate, require human verification.
+
+## Privacy
+
+A future Raspberry Pi deployment should consider privacy from the beginning.
+
+Where practical, local processing may allow audio to be analyzed without continuously transmitting raw recordings elsewhere.
+
+The deployment should clearly define:
+
+- Whether audio is stored
+- How long audio is retained
+- Whether audio leaves the device
+- Who can access stored data
+- What metadata is retained
+- How users are informed about audio processing
+
+See `docs/privacy.md` for additional guidance.
+
+## Security
+
+A deployed Raspberry Pi should be treated as a network-connected computing device if network access is enabled.
+
+Future deployment work should consider:
+
+- Operating-system updates
+- Dependency updates
+- Authentication
+- Network exposure
+- Secure configuration
+- Access control
+- Protection of model files
+- Protection of stored audio
+- Secure handling of credentials
+
+The production security architecture has not yet been defined.
+
+## Hardware Evaluation
+
+Before production deployment, the system should be evaluated on the intended Raspberry Pi hardware.
+
+Evaluation should consider:
+
+- CPU utilization
+- Memory utilization
+- Inference latency
+- Startup time
+- Continuous runtime
+- Thermal behavior
+- Power consumption
+- Storage usage
+- Audio capture reliability
+
+Results should be documented as experiments.
+
+## Testing
+
+Raspberry Pi deployment should be tested separately from the core software tests.
+
+The existing test suite should continue to run:
+
+```powershell
+python -m pytest -v
+```
+
+Hardware-specific testing should additionally verify the behavior of:
+
+- Audio capture
+- Feature extraction
+- Model inference
+- Repeated inference
+- Error recovery
+- Long-running operation
 
 ## Current Limitations
 
-The Raspberry Pi deployment is not yet production-ready.
+The project does not currently provide a validated Raspberry Pi deployment.
 
-The project currently does not provide:
+In particular:
 
-- A live microphone inference service
-- A finalized Raspberry Pi hardware configuration
-- A production deployment package
-- A formal performance benchmark
-- A production alerting system
-- Real-world deployment validation
+- No continuous microphone service is implemented.
+- No real-time inference service is implemented.
+- No production alerting system is implemented.
+- No hardware performance benchmark has been established.
+- No production deployment configuration has been finalized.
+
+Raspberry Pi deployment should therefore be considered future experimental work.
+
+## Future Work
+
+Potential future Raspberry Pi work includes:
+
+- Select target Raspberry Pi hardware.
+- Implement microphone capture.
+- Connect live audio to the existing feature pipeline.
+- Measure inference latency.
+- Measure CPU and memory usage.
+- Evaluate continuous operation.
+- Investigate model optimization if required.
+- Define secure deployment configuration.
+- Evaluate privacy implications.
+- Document hardware experiments.
+- Develop and test an appropriate alerting layer.
+
+All future deployment claims should be supported by measurements from the actual target hardware.
