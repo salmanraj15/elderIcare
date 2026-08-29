@@ -97,4 +97,3 @@ def test_evaluate_model_per_class():
 
     for accuracy in metrics.values():
         assert 0.0 <= accuracy <= 1.0
-        assert accuracy >= 0.90

@@ -3,6 +3,8 @@
 import torch
 
 from eldericare.model import AcousticEventClassifier
+from eldericare.audio import load_wav
+from eldericare.features import extract_features
 
 
 CLASS_NAMES = {
@@ -53,3 +55,19 @@ def predict_event(
         )
 
     return CLASS_NAMES[predicted_class], confidence
+
+def predict_wav(
+    model: AcousticEventClassifier,
+    path: str,
+) -> tuple[str, float]:
+    """Predict an acoustic event directly from a WAV file."""
+    _, audio = load_wav(path)
+
+    features = torch.from_numpy(
+        extract_features(audio)
+    )
+
+    return predict_event(
+        model,
+        features,
+    )

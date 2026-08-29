@@ -1,9 +1,12 @@
 """Tests for elderIcare inference utilities."""
 
 import torch
+import numpy as np
 
+from eldericare.inference import predict_event, predict_wav
+from eldericare.model import AcousticEventClassifier
+from scipy.io import wavfile
 from eldericare.dataset import create_synthetic_dataset
-from eldericare.inference import predict_event
 from eldericare.train import train_model
 
 
@@ -58,3 +61,28 @@ def test_predict_event_rejects_wrong_feature_shape():
         raise AssertionError(
             "Expected ValueError for invalid feature shape."
         )
+
+def test_predict_wav(tmp_path):
+    """WAV input should produce a valid event prediction."""
+    sample_rate = 16_000
+    samples = np.zeros(16_000, dtype=np.int16)
+
+    wav_path = tmp_path / "test.wav"
+    wavfile.write(
+        wav_path,
+        sample_rate,
+        samples,
+    )
+
+    model = AcousticEventClassifier()
+
+    event, confidence = predict_wav(
+        model,
+        str(wav_path),
+    )
+
+    assert event in {
+        "background",
+        "speech",
+        "impact",
+    }
