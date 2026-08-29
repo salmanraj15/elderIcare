@@ -123,6 +123,7 @@ if __name__ == "__main__":
         create_synthetic_dataset,
         split_dataset,
     )
+    from eldericare.inference import CLASS_NAMES
     from eldericare.model import save_model
 
     dataset = create_synthetic_dataset(
@@ -146,6 +147,11 @@ if __name__ == "__main__":
         evaluation_dataset,
     )
 
+    class_metrics = evaluate_model_per_class(
+        model,
+        evaluation_dataset,
+    )
+
     output_path = Path("models") / "baseline.pt"
 
     save_model(
@@ -154,4 +160,9 @@ if __name__ == "__main__":
     )
 
     print(f"Evaluation accuracy: {accuracy:.2%}")
+
+    for class_index, class_accuracy in class_metrics.items():
+        class_name = CLASS_NAMES[class_index]
+        print(f"{class_name}: {class_accuracy:.2%}")
+
     print(f"Model saved to: {output_path}")
