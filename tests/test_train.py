@@ -150,3 +150,40 @@ def test_evaluate_model_per_class():
 
     for accuracy in metrics.values():
         assert 0.0 <= accuracy <= 1.0
+
+def test_train_from_manifest(tmp_path):
+    """Training from a manifest should return a model and accuracy."""
+    import numpy as np
+    from scipy.io import wavfile
+
+    from eldericare.train import train_from_manifest
+
+    audio_path = tmp_path / "test.wav"
+
+    wavfile.write(
+        audio_path,
+        16_000,
+        np.zeros(16_000, dtype=np.int16),
+    )
+
+    manifest_path = tmp_path / "metadata.csv"
+
+    manifest_path.write_text(
+        "recording_id,class,path\n"
+        "REC_000001,background,test.wav\n"
+        "REC_000002,background,test.wav\n"
+        "REC_000003,background,test.wav\n"
+        "REC_000004,background,test.wav\n"
+        "REC_000005,background,test.wav\n",
+        encoding="utf-8",
+    )
+
+    model, accuracy = train_from_manifest(
+        manifest_path,
+        epochs=2,
+    )
+
+    assert model is not None
+    assert 0.0 <= accuracy <= 1.0
+
+

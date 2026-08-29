@@ -6,7 +6,11 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from eldericare.dataset import NUM_CLASSES
+from eldericare.dataset import (
+    NUM_CLASSES,
+    load_audio_dataset,
+    split_dataset,
+)
 from eldericare.model import AcousticEventClassifier
 
 torch.manual_seed(42)
@@ -119,6 +123,38 @@ def evaluate_model_per_class(
         )
         for class_index in range(num_classes)
     }
+
+def train_from_manifest(
+    manifest_path: str | Path,
+    epochs: int = 50,
+    batch_size: int = 32,
+    learning_rate: float = 0.01,
+    evaluation_fraction: float = 0.2,
+    seed: int = 42,
+    ) -> tuple[AcousticEventClassifier, float]:
+    """Train and evaluate a model using an audio dataset manifest."""
+    dataset = load_audio_dataset(manifest_path)
+
+    training_dataset, evaluation_dataset = split_dataset(
+        dataset,
+        evaluation_fraction=evaluation_fraction,
+        seed=seed,
+    )
+
+    model = train_model(
+        training_dataset,
+        epochs=epochs,
+        batch_size=batch_size,
+        learning_rate=learning_rate,
+        num_classes=NUM_CLASSES,
+    )
+
+    accuracy = evaluate_model(
+        model,
+        evaluation_dataset,
+    )
+
+    return model, accuracy
 
 if __name__ == "__main__":
     from eldericare.dataset import (
