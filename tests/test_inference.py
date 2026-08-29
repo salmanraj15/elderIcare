@@ -2,6 +2,8 @@
 
 import torch
 import numpy as np
+import subprocess
+import sys
 
 from eldericare.inference import predict_event, predict_wav
 from eldericare.model import AcousticEventClassifier
@@ -86,3 +88,33 @@ def test_predict_wav(tmp_path):
         "speech",
         "impact",
     }
+
+def test_predict_wav_cli_requires_argument():
+    """CLI should reject a missing WAV argument."""
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/predict_wav.py",
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert "Usage:" in result.stdout
+
+
+def test_predict_wav_cli_rejects_missing_file():
+    """CLI should reject a WAV file that does not exist."""
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/predict_wav.py",
+            "missing.wav",
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert "WAV file not found" in result.stdout
